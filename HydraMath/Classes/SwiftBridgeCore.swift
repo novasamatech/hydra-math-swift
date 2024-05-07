@@ -1,3 +1,4 @@
+import hydra_dx
 import Foundation
 
 extension RustString {

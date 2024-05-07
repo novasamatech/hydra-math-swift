@@ -1,3 +1,5 @@
+import hydra_dx
+
 public enum HydraStableswapMath {
     public static func calculateOutGivenIn<GenericIntoRustString: IntoRustString>(_ reserves: GenericIntoRustString, _ asset_in: UInt32, _ asset_out: UInt32, _ amount_in: GenericIntoRustString, _ amplification: GenericIntoRustString, _ fee: GenericIntoRustString) -> RustString {
         RustString(ptr: __swift_bridge__$calculate_out_given_in({ let rustString = reserves.intoRustString(); rustString.isOwned = false; return rustString.ptr }(), asset_in, asset_out, { let rustString = amount_in.intoRustString(); rustString.isOwned = false; return rustString.ptr }(), { let rustString = amplification.intoRustString(); rustString.isOwned = false; return rustString.ptr }(), { let rustString = fee.intoRustString(); rustString.isOwned = false; return rustString.ptr }()))
