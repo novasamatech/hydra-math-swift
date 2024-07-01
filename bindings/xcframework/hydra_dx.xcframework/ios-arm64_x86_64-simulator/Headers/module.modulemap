@@ -1,0 +1,5 @@
+module hydra_dx {
+    header "SwiftBridgeCore.h"
+    header "hydra-dx.h"
+    export *
+}

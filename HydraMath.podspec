@@ -8,34 +8,15 @@
 
 Pod::Spec.new do |s|
   s.name             = 'HydraMath'
-  s.version          = '0.1.0'
-  s.summary          = 'A short description of HydraMath.'
-
-# This description is used to generate tags and improve search results.
-#   * Think: What does it do? Why did you write it? What is the focus?
-#   * Try to keep it short, snappy and to the point.
-#   * Write the description between the DESC delimiters below.
-#   * Finally, don't worry about the indent, CocoaPods strips it!
-
-  s.description      = <<-DESC
-TODO: Add long description of the pod here.
-                       DESC
-
+  s.version          = '0.2.0'
+  s.summary          = 'Swift wrapper for hydra math'
   s.homepage         = 'https://github.com/novasamatech/hydra-math-swift'
   s.author           = { 'Ruslan Rezin' => 'ruslan@novawallet.io' }
   s.source           = { :git => 'https://github.com/novasamatech/hydra-math-swift.git', :tag => s.version.to_s }
 
-  s.ios.deployment_target = '13.0'
+  s.ios.deployment_target = '12.0'
+  s.swift_version = '5.0'
 
-  s.source_files = 'HydraMath/Classes/**/*', 'HydraMath/lib/include/**/*'
-  s.public_header_files = 'HydraMath/lib/include/**/*.h'
-  s.vendored_libraries = 'HydraMath/lib/libhydra_dx.a'
-  
-  # s.resource_bundles = {
-  #   'HydraMath' => ['HydraMath/Assets/*.png']
-  # }
-
-  # s.public_header_files = 'Pod/Classes/**/*.h'
-  # s.frameworks = 'UIKit', 'MapKit'
-  # s.dependency 'AFNetworking', '~> 2.3'
+  s.vendored_frameworks = 'bindings/xcframework/hydra_dx.xcframework'
+  s.source_files = 'Sources/**/*.swift'
 end
