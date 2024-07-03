@@ -3,8 +3,8 @@ extern crate core;
 #[swift_bridge::bridge]
 mod ffi {    
     extern "Rust" {
-        #[swift_bridge(swift_name = "calculateOutGivenIn")]
-        fn calculate_out_given_in(
+        #[swift_bridge(swift_name = "stableswapCalculateOutGivenIn")]
+        fn stableswap_calculate_out_given_in(
             reserves: String,
             asset_in: u32,
             asset_out: u32,
@@ -13,8 +13,8 @@ mod ffi {
             fee: String,
         ) -> String;
 
-        #[swift_bridge(swift_name = "calculateInGivenOut")]
-        fn calculate_in_given_out(
+        #[swift_bridge(swift_name = "stableswapCalculateInGivenOut")]
+        fn stableswap_calculate_in_given_out(
             reserves: String,
             asset_in: u32,
             asset_out: u32,
@@ -23,8 +23,8 @@ mod ffi {
             fee: String,
         ) -> String;
 
-        #[swift_bridge(swift_name = "calculateAmplification")]
-        fn calculate_amplification(
+        #[swift_bridge(swift_name = "stableswapCalculateAmplification")]
+        fn stableswap_calculate_amplification(
             initial_amplification: String,
             final_amplification: String,
             initial_block: String,
@@ -32,8 +32,8 @@ mod ffi {
             current_block: String,
         ) -> String;
 
-        #[swift_bridge(swift_name = "calculateShares")]
-        fn calculate_shares(
+        #[swift_bridge(swift_name = "stableswapCalculateShares")]
+        fn stableswap_calculate_shares(
             reserves: String,
             assets: String,
             amplification: String,
@@ -41,8 +41,8 @@ mod ffi {
             fee: String,
         ) -> String;
 
-        #[swift_bridge(swift_name = "calculateSharesForAmount")]
-        fn calculate_shares_for_amount(
+        #[swift_bridge(swift_name = "stableswapCalculateSharesForAmount")]
+        fn stableswap_calculate_shares_for_amount(
             reserves: String,
             asset_in: u32,
             amount: String,
@@ -51,8 +51,8 @@ mod ffi {
             fee: String,
         ) -> String;
 
-        #[swift_bridge(swift_name = "calculateAddOneAsset")]
-        fn calculate_add_one_asset(
+        #[swift_bridge(swift_name = "stableswapCalculateAddOneAsset")]
+        fn stableswap_calculate_add_one_asset(
             reserves: String,
             shares: String,
             asset_in: u32,
@@ -61,14 +61,35 @@ mod ffi {
             fee: String,
         ) -> String;
 
-        #[swift_bridge(swift_name = "calculateLiquidityOutOneAsset")]
-        fn calculate_liquidity_out_one_asset(
+        #[swift_bridge(swift_name = "stableswapCalculateLiquidityOutOneAsset")]
+        fn stableswap_calculate_liquidity_out_one_asset(
             reserves: String,
             shares: String,
             asset_out: u32,
             amplification: String,
             share_issuance: String,
             withdraw_fee: String,
+        ) -> String;
+
+        #[swift_bridge(swift_name = "xykCalculateOutGivenIn")]
+        fn xyk_calculate_out_given_in(
+            balance_in: String,
+            balance_out: String,
+            amount_in: String
+        ) -> String;
+
+        #[swift_bridge(swift_name = "xykCalculateInGivenOut")]
+        fn xyk_calculate_in_given_out(
+            balance_in: String,
+            balance_out: String,
+            amount_out: String
+        ) -> String;
+
+        #[swift_bridge(swift_name = "xykCalculatePoolTradeFee")]
+        fn xyk_calculate_pool_trade_fee(
+            amount: String,
+            fee_nominator: String,
+            fee_denominator: String
         ) -> String;
     }
 }
@@ -135,7 +156,7 @@ pub struct AssetAmount {
 }
 
 #[no_mangle]
-pub fn calculate_out_given_in(
+pub fn stableswap_calculate_out_given_in(
     reserves: String,
     asset_in: u32,
     asset_out: u32,
@@ -180,7 +201,7 @@ pub fn calculate_out_given_in(
 }
 
 #[no_mangle]
-pub fn calculate_in_given_out(
+pub fn stableswap_calculate_in_given_out(
     reserves: String,
     asset_in: u32,
     asset_out: u32,
@@ -225,7 +246,7 @@ pub fn calculate_in_given_out(
 }
 
 #[no_mangle]
-pub fn calculate_amplification(
+pub fn stableswap_calculate_amplification(
     initial_amplification: String,
     final_amplification: String,
     initial_block: String,
@@ -249,7 +270,7 @@ pub fn calculate_amplification(
 }
 
 #[no_mangle]
-pub fn calculate_shares(
+pub fn stableswap_calculate_shares(
     reserves: String,
     assets: String,
     amplification: String,
@@ -308,7 +329,7 @@ pub fn calculate_shares(
 }
 
 #[no_mangle]
-pub fn calculate_shares_for_amount(
+pub fn stableswap_calculate_shares_for_amount(
     reserves: String,
     asset_in: u32,
     amount: String,
@@ -349,7 +370,7 @@ pub fn calculate_shares_for_amount(
 }
 
 #[no_mangle]
-pub fn calculate_add_one_asset(
+pub fn stableswap_calculate_add_one_asset(
     reserves: String,
     shares: String,
     asset_in: u32,
@@ -391,7 +412,7 @@ pub fn calculate_add_one_asset(
 }
 
 #[no_mangle]
-pub fn calculate_liquidity_out_one_asset(
+pub fn stableswap_calculate_liquidity_out_one_asset(
     reserves: String,
     shares: String,
     asset_out: u32,
@@ -429,6 +450,63 @@ pub fn calculate_liquidity_out_one_asset(
 
     if let Some(r) = result {
         r.0.to_string()
+    } else {
+        error()
+    }
+}
+
+#[no_mangle]
+fn xyk_calculate_out_given_in(
+    balance_in: String,
+    balance_out: String,
+    amount_in: String
+) -> String {
+    let balance_in = parse_into!(u128, balance_in);
+    let balance_out = parse_into!(u128, balance_out);
+    let amount_in = parse_into!(u128, amount_in);
+
+    let result = hydra_dx_math::xyk::calculate_out_given_in(balance_in, balance_out, amount_in);
+
+    if let Ok(r) = result {
+        r.to_string()
+    } else {
+        error()
+    }
+}
+
+#[no_mangle]
+fn xyk_calculate_in_given_out(
+    balance_in: String,
+    balance_out: String,
+    amount_out: String
+) -> String {
+    let balance_in = parse_into!(u128, balance_in);
+    let balance_out = parse_into!(u128, balance_out);
+    let amount_out = parse_into!(u128, amount_out);
+
+    let result = hydra_dx_math::xyk::calculate_in_given_out(balance_out, balance_in, amount_out);
+
+    if let Ok(r) = result {
+        r.to_string()
+    } else {
+        error()
+    }
+}
+
+#[no_mangle]
+fn xyk_calculate_pool_trade_fee(
+    amount: String,
+    fee_nominator: String,
+    fee_denominator: String
+) -> String {
+    let amount = parse_into!(u128, amount);
+    let fee_nominator = parse_into!(u32, fee_nominator);
+    let fee_denominator = parse_into!(u32, fee_denominator);
+
+    let result = hydra_dx_math::fee::calculate_pool_trade_fee(amount, (fee_nominator, fee_denominator));
+
+    if let Some(r) = result {
+        r.to_string()
     } else {
         error()
     }
