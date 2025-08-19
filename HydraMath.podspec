@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'HydraMath'
-  s.version          = '0.2.0'
+  s.version          = '0.3.0'
   s.summary          = 'Swift wrapper for hydra math'
   s.homepage         = 'https://github.com/novasamatech/hydra-math-swift'
   s.author           = { 'Ruslan Rezin' => 'ruslan@novawallet.io' }
