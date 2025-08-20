@@ -23,7 +23,8 @@ class StableswapTests: XCTestCase {
             1,
             "1000000000",
             "1",
-            "0"
+            "0",
+            "[[\"1\", \"1\"], [\"1\", \"1\"]]"
         )
         
         XCTAssertEqual(result.toString(), "999500248")
@@ -53,7 +54,8 @@ class StableswapTests: XCTestCase {
             assets,
             "1000",
             "64839594451719860",
-            "0"
+            "0",
+            "[[\"1\", \"1\"], [\"1\", \"1\"]]"
         )
         
         XCTAssertEqual(result.toString(), "371541351762585")

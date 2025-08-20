@@ -11,6 +11,7 @@ mod ffi {
             amount_in: String,
             amplification: String,
             fee: String,
+            pegs_info: String,
         ) -> String;
 
         #[swift_bridge(swift_name = "stableswapCalculateInGivenOut")]
@@ -21,6 +22,7 @@ mod ffi {
             amount_out: String,
             amplification: String,
             fee: String,
+            pegs_info: String,
         ) -> String;
 
         #[swift_bridge(swift_name = "stableswapCalculateAmplification")]
@@ -39,6 +41,7 @@ mod ffi {
             amplification: String,
             share_issuance: String,
             fee: String,
+            pegs_info: String,
         ) -> String;
 
         #[swift_bridge(swift_name = "stableswapCalculateSharesForAmount")]
@@ -49,6 +52,7 @@ mod ffi {
             amplification: String,
             share_issuance: String,
             fee: String,
+            pegs_info: String,
         ) -> String;
 
         #[swift_bridge(swift_name = "stableswapCalculateAddOneAsset")]
@@ -59,6 +63,7 @@ mod ffi {
             amplification: String,
             share_issuance: String,
             fee: String,
+            pegs_info: String,
         ) -> String;
 
         #[swift_bridge(swift_name = "stableswapCalculateLiquidityOutOneAsset")]
@@ -69,6 +74,7 @@ mod ffi {
             amplification: String,
             share_issuance: String,
             withdraw_fee: String,
+            pegs_info: String,
         ) -> String;
 
         #[swift_bridge(swift_name = "xykCalculateOutGivenIn")]
@@ -92,12 +98,6 @@ mod ffi {
             fee_denominator: String
         ) -> String;
     }
-}
-
-macro_rules! to_u128 {
-    ($($x:expr),+) => (
-        {($($x.parse::<u128>().unwrap_or(0)),+)}
-    );
 }
 
 fn error() -> String {
@@ -155,6 +155,22 @@ pub struct AssetAmount {
     amount: u128,
 }
 
+// Tuple struct to apply per-field deserializers on u128s
+#[derive(Deserialize, Copy, Clone, Debug)]
+struct U128Pair(
+    #[serde(deserialize_with = "deserialize_number_from_string")] u128,
+    #[serde(deserialize_with = "deserialize_number_from_string")] u128,
+);
+
+// Parse JSON like: [["0","0"],["1000000000000","500000000000"],["42","1337"]]
+fn parse_pairs(json: &str) -> Option<Vec<(u128, u128)>> {
+    let v: serde_json::Result<Vec<U128Pair>> = serde_json::from_str(json);
+    match v {
+        Ok(vecp) => Some(vecp.into_iter().map(|p| (p.0, p.1)).collect()),
+        Err(_) => None,
+    }
+}
+
 #[no_mangle]
 pub fn stableswap_calculate_out_given_in(
     reserves: String,
@@ -163,6 +179,7 @@ pub fn stableswap_calculate_out_given_in(
     amount_in: String,
     amplification: String,
     fee: String,
+    pegs_info: String
 ) -> String {
     let reserves: serde_json::Result<Vec<AssetBalance>> = serde_json::from_str(&reserves);
     if reserves.is_err() {
@@ -184,6 +201,13 @@ pub fn stableswap_calculate_out_given_in(
 
     let balances: Vec<AssetReserve> = reserves.iter().map(|v| v.into()).collect();
 
+    let opt_pegs: Option<Vec<(u128, u128)>> = parse_pairs(&pegs_info);
+    if opt_pegs.is_none() {
+        return error();
+    }
+
+    let pegs = opt_pegs.unwrap();
+
     let result = hydra_dx_math::stableswap::calculate_out_given_in_with_fee::<D_ITERATIONS, Y_ITERATIONS>(
         &balances,
         idx_in.unwrap(),
@@ -191,6 +215,7 @@ pub fn stableswap_calculate_out_given_in(
         amount_in,
         amplification,
         fee,
+        &pegs
     );
 
     if let Some(r) = result {
@@ -208,6 +233,7 @@ pub fn stableswap_calculate_in_given_out(
     amount_out: String,
     amplification: String,
     fee: String,
+    pegs_info: String,
 ) -> String {
     let reserves: serde_json::Result<Vec<AssetBalance>> = serde_json::from_str(&reserves);
     if reserves.is_err() {
@@ -229,6 +255,13 @@ pub fn stableswap_calculate_in_given_out(
 
     let balances: Vec<AssetReserve> = reserves.iter().map(|v| v.into()).collect();
 
+    let opt_pegs: Option<Vec<(u128, u128)>> = parse_pairs(&pegs_info);
+    if opt_pegs.is_none() {
+        return error();
+    }
+
+    let pegs = opt_pegs.unwrap();
+
     let result = hydra_dx_math::stableswap::calculate_in_given_out_with_fee::<D_ITERATIONS, Y_ITERATIONS>(
         &balances,
         idx_in.unwrap(),
@@ -236,6 +269,7 @@ pub fn stableswap_calculate_in_given_out(
         amount_out,
         amplification,
         fee,
+        &pegs
     );
 
     if let Some(r) = result {
@@ -276,6 +310,7 @@ pub fn stableswap_calculate_shares(
     amplification: String,
     share_issuance: String,
     fee: String,
+    pegs_info: String,
 ) -> String {
     let reserves: serde_json::Result<Vec<AssetBalance>> = serde_json::from_str(&reserves);
     if reserves.is_err() {
@@ -313,16 +348,24 @@ pub fn stableswap_calculate_shares(
     let issuance = parse_into!(u128, share_issuance);
     let fee = Permill::from_float(parse_into!(f64, fee));
 
+    let opt_pegs: Option<Vec<(u128, u128)>> = parse_pairs(&pegs_info);
+    if opt_pegs.is_none() {
+        return error();
+    }
+
+    let pegs = opt_pegs.unwrap();
+
     let result = hydra_dx_math::stableswap::calculate_shares::<D_ITERATIONS>(
         &balances,
         &updated_balances,
         amplification,
         issuance,
         fee,
+        &pegs
     );
 
     if let Some(r) = result {
-        r.to_string()
+        r.0.to_string()
     } else {
         error()
     }
@@ -336,6 +379,7 @@ pub fn stableswap_calculate_shares_for_amount(
     amplification: String,
     share_issuance: String,
     fee: String,
+    pegs_info: String,
 ) -> String {
     let reserves: serde_json::Result<Vec<AssetBalance>> = serde_json::from_str(&reserves);
     if reserves.is_err() {
@@ -353,6 +397,13 @@ pub fn stableswap_calculate_shares_for_amount(
     let issuance = parse_into!(u128, share_issuance);
     let fee = Permill::from_float(parse_into!(f64, fee));
 
+    let opt_pegs: Option<Vec<(u128, u128)>> = parse_pairs(&pegs_info);
+    if opt_pegs.is_none() {
+        return error();
+    }
+
+    let pegs = opt_pegs.unwrap();
+
     let result = hydra_dx_math::stableswap::calculate_shares_for_amount::<D_ITERATIONS>(
         &balances,
         idx_in.unwrap(),
@@ -360,10 +411,11 @@ pub fn stableswap_calculate_shares_for_amount(
         amplification,
         issuance,
         fee,
+        &pegs
     );
 
     if let Some(r) = result {
-        r.to_string()
+        r.0.to_string()
     } else {
         error()
     }
@@ -377,6 +429,7 @@ pub fn stableswap_calculate_add_one_asset(
     amplification: String,
     share_issuance: String,
     fee: String,
+    pegs_info: String,
 ) -> String {
     let reserves: serde_json::Result<Vec<AssetBalance>> = serde_json::from_str(&reserves);
     if reserves.is_err() {
@@ -395,6 +448,13 @@ pub fn stableswap_calculate_add_one_asset(
     let issuance = parse_into!(u128, share_issuance);
     let fee = Permill::from_float(parse_into!(f64, fee));
 
+    let opt_pegs: Option<Vec<(u128, u128)>> = parse_pairs(&pegs_info);
+    if opt_pegs.is_none() {
+        return error();
+    }
+
+    let pegs = opt_pegs.unwrap();
+
     let result = hydra_dx_math::stableswap::calculate_add_one_asset::<D_ITERATIONS, Y_ITERATIONS>(
         &balances,
         shares,
@@ -402,6 +462,7 @@ pub fn stableswap_calculate_add_one_asset(
         issuance,
         amplification,
         fee,
+        &pegs
     );
 
     if let Some(r) = result {
@@ -419,6 +480,7 @@ pub fn stableswap_calculate_liquidity_out_one_asset(
     amplification: String,
     share_issuance: String,
     withdraw_fee: String,
+    pegs_info: String,
 ) -> String {
     let reserves: serde_json::Result<Vec<AssetBalance>> = serde_json::from_str(&reserves);
     if reserves.is_err() {
@@ -439,6 +501,13 @@ pub fn stableswap_calculate_liquidity_out_one_asset(
 
     let balances: Vec<AssetReserve> = reserves.iter().map(|v| v.into()).collect();
 
+    let opt_pegs: Option<Vec<(u128, u128)>> = parse_pairs(&pegs_info);
+    if opt_pegs.is_none() {
+        return error();
+    }
+
+    let pegs = opt_pegs.unwrap();
+
     let result = hydra_dx_math::stableswap::calculate_withdraw_one_asset::<D_ITERATIONS, Y_ITERATIONS>(
         &balances,
         shares_out,
@@ -446,6 +515,7 @@ pub fn stableswap_calculate_liquidity_out_one_asset(
         issuance,
         amplification,
         fee,
+        &pegs
     );
 
     if let Some(r) = result {
