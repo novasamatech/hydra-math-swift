@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundlePackageType</key>
+    <string>FMWK</string>
+    <key>CFBundleName</key>
+    <string>hydra_dx</string>
+    <key>CFBundleExecutable</key>
+    <string>hydra_dx</string>
+    <key>CFBundleIdentifier</key>
+    <string>io.novasama.hydra-math</string>
+    <key>CFBundleVersion</key>
+    <string>0.3-1-gb5ff84d</string>
+    <key>CFBundleShortVersionString</key>
+    <string>0.3-1-gb5ff84d</string>
+    <key>CFBundleSupportedPlatforms</key>
+    <array>
+        <string>MacOSX</string>
+    </array>
+    <key>DTPlatformName</key>
+    <string>macosx</string>
+    <key>DTSDKName</key>
+    <string>macosx</string>
+    <key>MinimumOSVersion</key>
+    <string>10.15</string>
+</dict>
+</plist>

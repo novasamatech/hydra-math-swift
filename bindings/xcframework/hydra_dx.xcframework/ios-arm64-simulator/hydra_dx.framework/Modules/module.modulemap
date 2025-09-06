@@ -1,0 +1,5 @@
+framework module hydra_dx {
+    umbrella header "../Headers/hydra-dx.h"
+    header "../Headers/SwiftBridgeCore.h"
+    export *
+}

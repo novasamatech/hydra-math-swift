@@ -10,7 +10,7 @@ release_dir="./target"
 temp_dir="./temp"
 bundle_id="io.novasama.hydra-math"
 min_macos_version="10.15"
-min_ios_version="14.0"
+min_ios_version="16.0"
 
 # Get version from git or fallback to default
 version=$(git describe --tags 2>/dev/null || echo "1.0.0")
@@ -68,6 +68,10 @@ targets=(
 cores=$(sysctl -n hw.ncpu 2>/dev/null || nproc 2>/dev/null || echo 2)
 
 export IPHONEOS_DEPLOYMENT_TARGET=$min_ios_version
+export IPHONESIMULATOR_DEPLOYMENT_TARGET=$min_ios_version
+
+export CARGO_TARGET_AARCH64_APPLE_IOS_RUSTFLAGS="-Clink-arg=-mios-version-min=$min_ios_version"
+export CARGO_TARGET_AARCH64_APPLE_IOS_SIM_RUSTFLAGS="-Clink-arg=-mios-simulator-version-min=$min_ios_version"
 
 for target in "${targets[@]}"; do
     log "INFO" "Building for $target"
@@ -86,16 +90,16 @@ for target in "${targets[@]}"; do
         exit 1
     }
     
-    header_name="metadata-shortener"
+    header_name="hydra-dx"
     
     # Copy headers
-    if [[ ! -f "./generated/SwiftBridgeCore.h" || ! -f "./generated/${header_name}/${header_name}.h" ]]; then
+    if [[ ! -f "${header_name}/Generated/SwiftBridgeCore.h" || ! -f "${header_name}/Generated/${header_name}/${header_name}.h" ]]; then
         log "ERROR" "Header files not found. Make sure they have been generated."
         exit 1
     fi
     
-    cp "./generated/SwiftBridgeCore.h" "$framework_dir/Headers/"
-    cp "./generated/${header_name}/${header_name}.h" "$framework_dir/Headers/"
+    cp "${header_name}/Generated/SwiftBridgeCore.h" "$framework_dir/Headers/"
+    cp "${header_name}/Generated/${header_name}/${header_name}.h" "$framework_dir/Headers/"
     
     # Determine platform-specific settings
     case $target in
