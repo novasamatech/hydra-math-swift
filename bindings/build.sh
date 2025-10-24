@@ -12,8 +12,13 @@ bundle_id="io.novasama.hydra-math"
 min_macos_version="10.15"
 min_ios_version="16.0"
 
-# Get version from git or fallback to default
-version=$(git describe --tags 2>/dev/null || echo "1.0.0")
+# Get version from command line argument
+if [ -z "$1" ]; then
+    echo "Usage: $0 <version>"
+    echo "Example: $0 1.0.0"
+    exit 1
+fi
+version="$1"
 
 # Terminal colors
 RED='\033[1;31m'
@@ -41,6 +46,8 @@ log() {
             ;;
     esac
 }
+
+log "INFO" "Building version: $version"
 
 # Check prerequisites
 for cmd in cargo xcodebuild; do
@@ -79,28 +86,28 @@ for target in "${targets[@]}"; do
         log "ERROR" "Failed to build for $target"
         exit 1
     }
-    
+
     # Create temporary framework structure
     framework_dir="$temp_dir/$target/$lib_name.framework"
     mkdir -p "$framework_dir/Headers" "$framework_dir/Modules"
-    
+
     # Copy library
     cp "$release_dir/$target/release/lib${lib_name}.a" "$framework_dir/$lib_name" || {
         log "ERROR" "Failed to copy library for $target"
         exit 1
     }
-    
+
     header_name="hydra-dx"
-    
+
     # Copy headers
     if [[ ! -f "${header_name}/Generated/SwiftBridgeCore.h" || ! -f "${header_name}/Generated/${header_name}/${header_name}.h" ]]; then
         log "ERROR" "Header files not found. Make sure they have been generated."
         exit 1
     fi
-    
+
     cp "${header_name}/Generated/SwiftBridgeCore.h" "$framework_dir/Headers/"
     cp "${header_name}/Generated/${header_name}/${header_name}.h" "$framework_dir/Headers/"
-    
+
     # Determine platform-specific settings
     case $target in
         *"-apple-darwin")
@@ -195,7 +202,7 @@ log "SUCCESS" "XCFramework created at $output_dir/${lib_name}.xcframework"
 
 # Clean up temporary files
 log "INFO" "Cleaning up"
-rm -rf $temp_dir 
+rm -rf $temp_dir
 
 # Only remove generated files if build was successful
 if [[ -d "$output_dir/${lib_name}.xcframework" ]]; then
