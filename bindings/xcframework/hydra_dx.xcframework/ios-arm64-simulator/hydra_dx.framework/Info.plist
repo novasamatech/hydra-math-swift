@@ -11,9 +11,9 @@
     <key>CFBundleIdentifier</key>
     <string>io.novasama.hydra-math</string>
     <key>CFBundleVersion</key>
-    <string>0.4.1</string>
+    <string>0.5.0</string>
     <key>CFBundleShortVersionString</key>
-    <string>0.4.1</string>
+    <string>0.5.0</string>
     <key>CFBundleSupportedPlatforms</key>
     <array>
         <string>iPhoneSimulator</string>

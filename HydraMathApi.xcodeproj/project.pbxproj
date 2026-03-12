@@ -14,6 +14,8 @@
 		0C39769B2C32BB8F00998DD6 /* StableswapTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C39769A2C32BB8F00998DD6 /* StableswapTests.swift */; };
 		0C39769D2C32BC4E00998DD6 /* XYKSwap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C39769C2C32BC4E00998DD6 /* XYKSwap.swift */; };
 		0C3976A12C32D58E00998DD6 /* XYKSwapTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C3976A02C32D58E00998DD6 /* XYKSwapTests.swift */; };
+		0CB4A0882F631FF000158374 /* Omnipool.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CB4A0872F631FF000158374 /* Omnipool.swift */; };
+		0CB4A08A2F631FF900158374 /* OmnipoolTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CB4A0892F631FF900158374 /* OmnipoolTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -35,6 +37,8 @@
 		0C39769A2C32BB8F00998DD6 /* StableswapTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StableswapTests.swift; sourceTree = "<group>"; };
 		0C39769C2C32BC4E00998DD6 /* XYKSwap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XYKSwap.swift; sourceTree = "<group>"; };
 		0C3976A02C32D58E00998DD6 /* XYKSwapTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XYKSwapTests.swift; sourceTree = "<group>"; };
+		0CB4A0872F631FF000158374 /* Omnipool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Omnipool.swift; sourceTree = "<group>"; };
+		0CB4A0892F631FF900158374 /* OmnipoolTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OmnipoolTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -79,6 +83,7 @@
 		0C3976942C32BB3D00998DD6 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
+				0CB4A0872F631FF000158374 /* Omnipool.swift */,
 				0C3976952C32BB3D00998DD6 /* Stableswap.swift */,
 				0C3976962C32BB3D00998DD6 /* SwiftBridgeCore.swift */,
 				0C39769C2C32BC4E00998DD6 /* XYKSwap.swift */,
@@ -89,6 +94,7 @@
 		0C3976992C32BB8F00998DD6 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				0CB4A0892F631FF900158374 /* OmnipoolTests.swift */,
 				0C39769A2C32BB8F00998DD6 /* StableswapTests.swift */,
 				0C3976A02C32D58E00998DD6 /* XYKSwapTests.swift */,
 			);
@@ -205,6 +211,7 @@
 			files = (
 				0C3976972C32BB3D00998DD6 /* Stableswap.swift in Sources */,
 				0C39769D2C32BC4E00998DD6 /* XYKSwap.swift in Sources */,
+				0CB4A0882F631FF000158374 /* Omnipool.swift in Sources */,
 				0C3976982C32BB3D00998DD6 /* SwiftBridgeCore.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -214,6 +221,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0C39769B2C32BB8F00998DD6 /* StableswapTests.swift in Sources */,
+				0CB4A08A2F631FF900158374 /* OmnipoolTests.swift in Sources */,
 				0C3976A12C32D58E00998DD6 /* XYKSwapTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
