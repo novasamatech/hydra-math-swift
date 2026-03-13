@@ -21,8 +21,8 @@ wee_alloc = "0.4.5"
 serde = { version = "1.0.169", features = ["derive"] }
 serde_json = "1.0.100"
 serde-aux = "4.2.0"
-sp-arithmetic = { git = "https://github.com/galacticcouncil/polkadot-sdk", branch = "stable2409-patch6", default-features = false }
-hydra-dx-math = { git = "https://github.com/galacticcouncil/HydraDX-node", version="10.3.0" }
+sp-arithmetic = { git = "https://github.com/galacticcouncil/polkadot-sdk", branch = "polkadot-stable2503-11-patch2", default-features = false }
+hydra-dx-math = { git = "https://github.com/galacticcouncil/hydration-node", branch = "master" }
 swift-bridge = "0.1"
 
 [profile.release]

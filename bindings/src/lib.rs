@@ -97,6 +97,34 @@ mod ffi {
             fee_nominator: String,
             fee_denominator: String
         ) -> String;
+
+        #[swift_bridge(swift_name = "omnipoolCalculateOutGivenIn")]
+        fn omnipool_calculate_out_given_in(
+            asset_in_reserve: String,
+            asset_in_hub_reserve: String,
+            asset_in_shares: String,
+            asset_out_reserve: String,
+            asset_out_hub_reserve: String,
+            asset_out_shares: String,
+            amount_in: String,
+            asset_fee: String,
+            protocol_fee: String,
+            max_slip_fee: String,
+        ) -> String;
+
+        #[swift_bridge(swift_name = "omnipoolCalculateInGivenOut")]
+        fn omnipool_calculate_in_given_out(
+            asset_in_reserve: String,
+            asset_in_hub_reserve: String,
+            asset_in_shares: String,
+            asset_out_reserve: String,
+            asset_out_hub_reserve: String,
+            asset_out_shares: String,
+            amount_out: String,
+            asset_fee: String,
+            protocol_fee: String,
+            max_slip_fee: String,
+        ) -> String;
     }
 }
 
@@ -105,16 +133,11 @@ fn error() -> String {
 }
 
 use hydra_dx_math::stableswap::types::AssetReserve;
+use hydra_dx_math::omnipool::types::{AssetReserveState, BalanceUpdate, TradeSlipFees, SignedBalance};
 use std::collections::HashMap;
 
 use serde::Deserialize;
 use sp_arithmetic::Permill;
-#[cfg(test)]
-use sp_core::crypto::UncheckedFrom;
-#[cfg(test)]
-use sp_core::Hasher;
-#[cfg(test)]
-use sp_runtime::traits::IdentifyAccount;
 
 use serde_aux::prelude::*;
 
@@ -581,3 +604,133 @@ fn xyk_calculate_pool_trade_fee(
         error()
     }
 }
+
+// Omnipool helpers
+
+fn build_asset_reserve_state(reserve: u128, hub_reserve: u128, shares: u128) -> AssetReserveState<u128> {
+    AssetReserveState {
+        reserve,
+        hub_reserve,
+        shares,
+        protocol_shares: 0,
+    }
+}
+
+fn build_slip_fees(
+    asset_in_hub_reserve: u128,
+    asset_out_hub_reserve: u128,
+    max_slip_fee: Permill,
+) -> Option<TradeSlipFees> {
+    if max_slip_fee == Permill::zero() {
+        None
+    } else {
+        Some(TradeSlipFees {
+            asset_in_hub_reserve,
+            asset_in_delta: SignedBalance::Positive(0),
+            asset_out_hub_reserve,
+            asset_out_delta: SignedBalance::Positive(0),
+            max_slip_fee,
+        })
+    }
+}
+
+#[no_mangle]
+fn omnipool_calculate_out_given_in(
+    asset_in_reserve: String,
+    asset_in_hub_reserve: String,
+    asset_in_shares: String,
+    asset_out_reserve: String,
+    asset_out_hub_reserve: String,
+    asset_out_shares: String,
+    amount_in: String,
+    asset_fee: String,
+    protocol_fee: String,
+    max_slip_fee: String,
+) -> String {
+    let asset_in_reserve = parse_into!(u128, asset_in_reserve);
+    let asset_in_hub_reserve = parse_into!(u128, asset_in_hub_reserve);
+    let asset_in_shares = parse_into!(u128, asset_in_shares);
+    let asset_out_reserve = parse_into!(u128, asset_out_reserve);
+    let asset_out_hub_reserve = parse_into!(u128, asset_out_hub_reserve);
+    let asset_out_shares = parse_into!(u128, asset_out_shares);
+    let amount = parse_into!(u128, amount_in);
+    let asset_fee = Permill::from_float(parse_into!(f64, asset_fee));
+    let protocol_fee = Permill::from_float(parse_into!(f64, protocol_fee));
+    let max_slip_fee = Permill::from_float(parse_into!(f64, max_slip_fee));
+
+    let asset_in = build_asset_reserve_state(asset_in_reserve, asset_in_hub_reserve, asset_in_shares);
+    let asset_out = build_asset_reserve_state(asset_out_reserve, asset_out_hub_reserve, asset_out_shares);
+    let slip = build_slip_fees(asset_in_hub_reserve, asset_out_hub_reserve, max_slip_fee);
+
+    let result = hydra_dx_math::omnipool::calculate_sell_state_changes(
+        &asset_in,
+        &asset_out,
+        amount,
+        asset_fee,
+        protocol_fee,
+        Permill::zero(),
+        slip.as_ref(),
+    );
+
+    match result {
+        Some(state) => match state.asset_out.delta_reserve {
+            BalanceUpdate::Increase(v) => v.to_string(),
+            BalanceUpdate::Decrease(v) => v.to_string(),
+        },
+        None => error(),
+    }
+}
+
+#[no_mangle]
+fn omnipool_calculate_in_given_out(
+    asset_in_reserve: String,
+    asset_in_hub_reserve: String,
+    asset_in_shares: String,
+    asset_out_reserve: String,
+    asset_out_hub_reserve: String,
+    asset_out_shares: String,
+    amount_out: String,
+    asset_fee: String,
+    protocol_fee: String,
+    max_slip_fee: String,
+) -> String {
+    let asset_in_reserve = parse_into!(u128, asset_in_reserve);
+    let asset_in_hub_reserve = parse_into!(u128, asset_in_hub_reserve);
+    let asset_in_shares = parse_into!(u128, asset_in_shares);
+    let asset_out_reserve = parse_into!(u128, asset_out_reserve);
+    let asset_out_hub_reserve = parse_into!(u128, asset_out_hub_reserve);
+    let asset_out_shares = parse_into!(u128, asset_out_shares);
+    let amount = parse_into!(u128, amount_out);
+    let asset_fee = Permill::from_float(parse_into!(f64, asset_fee));
+    let protocol_fee = Permill::from_float(parse_into!(f64, protocol_fee));
+    let max_slip_fee = Permill::from_float(parse_into!(f64, max_slip_fee));
+
+    let asset_in = build_asset_reserve_state(asset_in_reserve, asset_in_hub_reserve, asset_in_shares);
+    let asset_out = build_asset_reserve_state(asset_out_reserve, asset_out_hub_reserve, asset_out_shares);
+    let slip = build_slip_fees(asset_in_hub_reserve, asset_out_hub_reserve, max_slip_fee);
+
+    let result = hydra_dx_math::omnipool::calculate_buy_state_changes(
+        &asset_in,
+        &asset_out,
+        amount,
+        asset_fee,
+        protocol_fee,
+        Permill::zero(),
+        slip.as_ref(),
+    );
+
+    match result {
+        Some(state) => match state.asset_in.delta_reserve {
+            BalanceUpdate::Increase(v) => v.to_string(),
+            BalanceUpdate::Decrease(v) => v.to_string(),
+        },
+        None => error(),
+    }
+}
+
+#[cfg(test)]
+mod stableswap_tests;
+#[cfg(test)]
+mod xyk_tests;
+#[cfg(test)]
+mod omnipool_tests;
