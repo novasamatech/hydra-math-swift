@@ -12,5 +12,6 @@ void* __swift_bridge__$xyk_calculate_in_given_out(void* balance_in, void* balanc
 void* __swift_bridge__$xyk_calculate_pool_trade_fee(void* amount, void* fee_nominator, void* fee_denominator);
 void* __swift_bridge__$omnipool_calculate_out_given_in(void* asset_in_reserve, void* asset_in_hub_reserve, void* asset_in_shares, void* asset_out_reserve, void* asset_out_hub_reserve, void* asset_out_shares, void* amount_in, void* asset_fee, void* protocol_fee, void* max_slip_fee);
 void* __swift_bridge__$omnipool_calculate_in_given_out(void* asset_in_reserve, void* asset_in_hub_reserve, void* asset_in_shares, void* asset_out_reserve, void* asset_out_hub_reserve, void* asset_out_shares, void* amount_out, void* asset_fee, void* protocol_fee, void* max_slip_fee);
+void* __swift_bridge__$ema_iterated_price(void* prev_n, void* prev_d, void* incoming_n, void* incoming_d, uint32_t iterations, void* smoothing);
 
 

@@ -1,5 +1,6 @@
 bindings/hydra-dx
 bindings/target
+.build
 
 # macOS
 .DS_Store
