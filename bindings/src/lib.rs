@@ -125,6 +125,16 @@ mod ffi {
             protocol_fee: String,
             max_slip_fee: String,
         ) -> String;
+
+        #[swift_bridge(swift_name = "emaIteratedPrice")]
+        fn ema_iterated_price(
+            prev_n: String,
+            prev_d: String,
+            incoming_n: String,
+            incoming_d: String,
+            iterations: u32,
+            smoothing: String,
+        ) -> String;
     }
 }
 
@@ -132,8 +142,10 @@ fn error() -> String {
     "-1".to_string()
 }
 
+use hydra_dx_math::ema::EmaPrice;
 use hydra_dx_math::stableswap::types::AssetReserve;
 use hydra_dx_math::omnipool::types::{AssetReserveState, BalanceUpdate, TradeSlipFees, SignedBalance};
+use hydra_dx_math::types::Fraction;
 use std::collections::HashMap;
 
 use serde::Deserialize;
@@ -728,9 +740,36 @@ fn omnipool_calculate_in_given_out(
     }
 }
 
+#[no_mangle]
+fn ema_iterated_price(
+    prev_n: String,
+    prev_d: String,
+    incoming_n: String,
+    incoming_d: String,
+    iterations: u32,
+    smoothing: String,
+) -> String {
+    let prev_n = parse_into!(u128, prev_n);
+    let prev_d = parse_into!(u128, prev_d);
+    let incoming_n = parse_into!(u128, incoming_n);
+    let incoming_d = parse_into!(u128, incoming_d);
+    let smoothing = parse_into!(u128, smoothing);
+
+    let price = hydra_dx_math::ema::iterated_price_ema(
+        iterations,
+        EmaPrice::new(prev_n, prev_d),
+        EmaPrice::new(incoming_n, incoming_d),
+        Fraction::from_bits(smoothing),
+    );
+
+    format!("{},{}", price.n, price.d)
+}
+
 #[cfg(test)]
 mod stableswap_tests;
 #[cfg(test)]
 mod xyk_tests;
 #[cfg(test)]
 mod omnipool_tests;
+#[cfg(test)]
+mod ema_tests;
